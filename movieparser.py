@@ -1,7 +1,8 @@
 from __future__ import print_function
 import xml.sax
 import requests
-
+import datetime
+import sys
 
 class MovieHandler( xml.sax.ContentHandler ):
    def __init__(self):
@@ -28,7 +29,10 @@ class MovieHandler( xml.sax.ContentHandler ):
 
 
 if ( __name__ == "__main__"):
-   
+   if len(sys.argv) < 2:
+      print ("One argument stating area is needed.")
+      sys.exit(0)
+
    # create an XMLReader
    parser = xml.sax.make_parser()
    # turn off namepsaces
@@ -37,7 +41,14 @@ if ( __name__ == "__main__"):
    # override the default ContextHandler
    Handler = MovieHandler()
    parser.setContentHandler( Handler )
+   kinop = sys.argv[1]
 
-   r = requests.get("http://www.finnkino.fi/xml/Schedule/")
+   r = requests.get("http://www.finnkino.fi/xml/Schedule/?area=%s" % kinop)
    xml.sax.parseString(r.text.encode("UTF-8"), Handler)
-   print (Handler.movies)
+
+   dateformat = "%Y-%m-%dT%H:%M:%S"
+
+   #datetime.datetime.strptime("2016-01-22T23:45:00", "%Y-%m-%dT%H:%M:%S")
+   movies = [(datetime.datetime.strptime(x["dttmShowStart"], dateformat),datetime.datetime.strptime(x["dttmShowEnd"], dateformat),x["Title"],x["TheatreAndAuditorium"]) for x in Handler.movies]
+   now = datetime.datetime.now()
+   print (filter(lambda x: x[1] > now,movies))
