@@ -5,10 +5,11 @@ import datetime
 import sys
 
 class MovieHandler( xml.sax.ContentHandler ):
-   def __init__(self):
+   def __init__(self, endtag):
       self.CurrentData = ""
       self.movies = []
       self.current = {}
+      self.endtag = endtag
 
    # Call when an element starts
    def startElement(self, tag, attributes):
@@ -16,7 +17,7 @@ class MovieHandler( xml.sax.ContentHandler ):
 
    # Call when an elements ends
    def endElement(self, tag):
-      if tag == "Show":
+      if tag == self.endtag:
          self.movies.append(self.current)
          self.current = {}
 
@@ -33,7 +34,7 @@ def movies_place(place):
    parser.setFeature(xml.sax.handler.feature_namespaces, 0)
 
    # override the default ContextHandler
-   Handler = MovieHandler()
+   Handler = MovieHandler("Show")
    parser.setContentHandler( Handler )
    kinop = place
 
@@ -47,10 +48,29 @@ def movies_place(place):
    now = datetime.datetime.now()
    return filter(lambda x: x[1] > now,movies)
 
+def areas():
+   # create an XMLReader
+   parser = xml.sax.make_parser()
+   # turn off namepsaces
+   parser.setFeature(xml.sax.handler.feature_namespaces, 0)
+
+   # override the default ContextHandler
+   Handler = MovieHandler("TheatreArea")
+   parser.setContentHandler( Handler )
+
+   r = requests.get("http://www.finnkino.fi/xml/TheatreAreas/")
+   xml.sax.parseString(r.text.encode("UTF-8"), Handler)
+   areas = dict([(x["ID"], x["Name"]) for x in Handler.movies])
+   return areas
+
+
 
 if ( __name__ == "__main__"):
    if len(sys.argv) < 2:
       print ("One argument stating area is needed.")
+      venues = areas()
+      for v in sorted(venues.keys()):
+         print ("%s: %s" % (v, venues[v]))
       sys.exit(0)
 
    l = movies_place(sys.argv[1])
