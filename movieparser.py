@@ -43,7 +43,7 @@ def movies_place(place):
    dateformat = "%Y-%m-%dT%H:%M:%S"
 
    #datetime.datetime.strptime("2016-01-22T23:45:00", "%Y-%m-%dT%H:%M:%S")
-   movies = [(datetime.datetime.strptime(x["dttmShowStart"], dateformat),datetime.datetime.strptime(x["dttmShowEnd"], dateformat),x["Title"],x["TheatreAndAuditorium"]) for x in Handler.movies]
+   movies = [(datetime.datetime.strptime(x["dttmShowStart"], dateformat),datetime.datetime.strptime(x["dttmShowEnd"], dateformat),x["Title"],x["TheatreAndAuditorium"], x["LengthInMinutes"]) for x in Handler.movies]
    now = datetime.datetime.now()
    return filter(lambda x: x[1] > now,movies)
 
@@ -54,4 +54,5 @@ if ( __name__ == "__main__"):
       sys.exit(0)
 
    l = movies_place(sys.argv[1])
-   print(l)
+   for item in l:
+      print (datetime.datetime.strftime(item[0], "%H.%M"), item[2],  item[3], "kesto %s min" % item[4])
