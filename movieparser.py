@@ -63,6 +63,9 @@ def areas():
    areas = dict([(x["ID"], x["Name"]) for x in Handler.movies])
    return areas
 
+def nice_line(item):
+   ts = datetime.datetime.strftime(item[0], "%H.%M")
+   return "%s: %s, %s, kesto %s min" % (ts,item[2],item[3],item[4])
 
 
 if ( __name__ == "__main__"):
@@ -75,4 +78,4 @@ if ( __name__ == "__main__"):
 
    l = movies_place(sys.argv[1])
    for item in l:
-      print (datetime.datetime.strftime(item[0], "%H.%M"), item[2],  item[3], "kesto %s min" % item[4])
+      print (nice_line(item))
