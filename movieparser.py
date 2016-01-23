@@ -29,12 +29,9 @@ class MovieHandler( xml.sax.ContentHandler ):
       self.current[self.CurrentData] = content
   
 def movies_place(place):
-   # create an XMLReader
    parser = xml.sax.make_parser()
-   # turn off namepsaces
    parser.setFeature(xml.sax.handler.feature_namespaces, 0)
 
-   # override the default ContextHandler
    Handler = MovieHandler("Show")
    parser.setContentHandler( Handler )
 
@@ -46,15 +43,12 @@ def movies_place(place):
 
    dateformat = "%Y-%m-%dT%H:%M:%S"
 
-   #datetime.datetime.strptime("2016-01-22T23:45:00", "%Y-%m-%dT%H:%M:%S")
    movies = [(datetime.datetime.strptime(x["dttmShowStart"], dateformat),datetime.datetime.strptime(x["dttmShowEnd"], dateformat),x["Title"],x["TheatreAndAuditorium"], x["LengthInMinutes"]) for x in Handler.movies]
    now = datetime.datetime.now()
    return filter(lambda x: x[1] > now,movies)
 
 def areas():
-   # create an XMLReader
    parser = xml.sax.make_parser()
-   # turn off namepsaces
    parser.setFeature(xml.sax.handler.feature_namespaces, 0)
 
    # override the default ContextHandler
