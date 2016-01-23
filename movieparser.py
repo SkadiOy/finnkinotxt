@@ -70,9 +70,6 @@ def nice_line(item):
    ts = datetime.datetime.strftime(item[0], "%H.%M")
    return "%s: %s, %s, kesto %s min" % (ts,item[2],item[3],item[4])
 
-def fuzz_match(areas, place):
-   return "1029"
-
 if ( __name__ == "__main__"):
    places = areas()
    venues = dict(places)
