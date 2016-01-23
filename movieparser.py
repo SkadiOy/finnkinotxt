@@ -108,17 +108,18 @@ def lambda_handler(event, context):
     user = params['user_name'][0]
     command = params['command'][0]
     channel = params['channel_name'][0]
+    venues = dict(areas())
     if params.has_key('text'):
         command_text = params['text'][0]
     else:
         command_text = "Helsinki"
     if command_text.lower() == "alueet":
-        venues = dict(areas())
         result = {"text": "\n".join(["%s: %s" % (v, fix_ao(venues[v])) for v in sorted(venues.keys())])}
         return result
     closest_match = arg_to_place(command_text,areas())
     l = movies_place(closest_match)
-    result = {"text": "\n".join([nice_line(i) for i in l]), "title": closest_match}
+    movie_summary = "\n".join([nice_line(i) for i in l])
+    result = {"text": movie_summary, "attachments":[{ "title": venues[closest_match], "text": movie_summary }]   }
 
     return result
 
