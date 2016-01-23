@@ -4,6 +4,10 @@ import requests
 import datetime
 import sys
 from fuzzywuzzy import fuzz
+import boto3
+from base64 import b64decode
+from urlparse import parse_qs
+import logging
 
 class MovieHandler( xml.sax.ContentHandler ):
    def __init__(self, endtag):
@@ -70,6 +74,31 @@ def arg_to_place(arg, places):
    except ValueError:
       place = sorted(map(lambda x: (fuzz.ratio(arg,x[1]),x), places))[-1][1][0]
    return place
+
+
+
+ENCRYPTED_EXPECTED_TOKEN = "CiCMaLgbIgY1tALBXOBOLadCqNPKt+QxKJGf5FAWfr+cIhKfAQEBAgB4jGi4GyIGNbQCwVzgTi2nQqjTyrfkMSiRn+RQFn6/nCIAAAB2MHQGCSqGSIb3DQEHBqBnMGUCAQAwYAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAy+8y6StK4ViPcWHV4CARCAMzX7xGBzE0Xpq5eywF3FnnOyQNTkErQ3vx2aWXHY/5I9u1oBgz4UJVkGH6BAOjQaxw0Yeg==" # Enter the base-64 encoded, encrypted Slack command token (CiphertextBlob)
+
+kms = boto3.client('kms')
+expected_token = kms.decrypt(CiphertextBlob = b64decode(ENCRYPTED_EXPECTED_TOKEN))['Plaintext']
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
+def lambda_handler(event, context):
+    req_body = event['body']
+    params = parse_qs(req_body)
+    token = params['token'][0]
+    if token != expected_token:
+        logger.error("Request token (%s) does not match expected", token)
+        raise Exception("Invalid request token")
+
+    user = params['user_name'][0]
+    command = params['command'][0]
+    channel = params['channel_name'][0]
+    command_text = params['text'][0]
+
+    return "%s invoked %s in %s with the following text: %s" % (user, command, channel, command_text)
 
 
 if ( __name__ == "__main__"):
