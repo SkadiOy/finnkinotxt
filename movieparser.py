@@ -70,11 +70,11 @@ def nice_line(item):
    ts = datetime.datetime.strftime(item[0], "%H.%M")
    return "%s: %s, %s, kesto %s min" % (ts,item[2],item[3],item[4])
 
-def arg_to_place(arg):
+def arg_to_place(arg, places):
    try:
       place = str(int(arg))
    except ValueError:
-      place = sorted(map(lambda x: (fuzz.ratio(arg,x[1]),x), areas()))[-1][1][0]
+      place = sorted(map(lambda x: (fuzz.ratio(arg,x[1]),x), places))[-1][1][0]
    return place
 
 
@@ -88,6 +88,6 @@ if ( __name__ == "__main__"):
       sys.exit(0)
 
 
-   l = movies_place(arg_to_place(sys.argv[1]))
+   l = movies_place(arg_to_place(sys.argv[1], places))
    for item in l:
       print (nice_line(item))
