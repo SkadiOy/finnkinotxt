@@ -3,6 +3,7 @@ import xml.sax
 import requests
 import datetime
 import sys
+from fuzzywuzzy import fuzz
 
 class MovieHandler( xml.sax.ContentHandler ):
    def __init__(self, endtag):
@@ -36,9 +37,11 @@ def movies_place(place):
    # override the default ContextHandler
    Handler = MovieHandler("Show")
    parser.setContentHandler( Handler )
-   kinop = place
 
-   r = requests.get("http://www.finnkino.fi/xml/Schedule/?area=%s" % kinop)
+   if place:
+      r = requests.get("http://www.finnkino.fi/xml/Schedule/?area=%s" % place)
+   else:
+      r = requests.get("http://www.finnkino.fi/xml/Schedule/")
    xml.sax.parseString(r.text.encode("UTF-8"), Handler)
 
    dateformat = "%Y-%m-%dT%H:%M:%S"
@@ -60,22 +63,30 @@ def areas():
 
    r = requests.get("http://www.finnkino.fi/xml/TheatreAreas/")
    xml.sax.parseString(r.text.encode("UTF-8"), Handler)
-   areas = dict([(x["ID"], x["Name"]) for x in Handler.movies])
+   areas = [(x["ID"], x["Name"]) for x in Handler.movies]
    return areas
 
 def nice_line(item):
    ts = datetime.datetime.strftime(item[0], "%H.%M")
    return "%s: %s, %s, kesto %s min" % (ts,item[2],item[3],item[4])
 
+def fuzz_match(areas, place):
+   return "1029"
 
 if ( __name__ == "__main__"):
+   places = areas()
+   venues = dict(places)
    if len(sys.argv) < 2:
       print ("One argument stating area is needed.")
-      venues = areas()
       for v in sorted(venues.keys()):
          print ("%s: %s" % (v, venues[v]))
       sys.exit(0)
 
-   l = movies_place(sys.argv[1])
+   try:
+      place = str(int(sys.argv[1]))
+   except ValueError:
+      place = sorted(map(lambda x: (fuzz.ratio(sys.argv[1],x[1]),x), areas()))[-1][1][0]
+
+   l = movies_place(place)
    for item in l:
       print (nice_line(item))
