@@ -3,6 +3,7 @@ import xml.sax
 import requests
 import datetime
 import sys
+import os
 from fuzzywuzzy import fuzz
 import boto3
 from base64 import b64decode
@@ -10,6 +11,7 @@ from urlparse import parse_qs
 import logging
 import json
 #import ftfy
+#heeheehee
 
 class MovieHandler(xml.sax.ContentHandler):
 
@@ -87,12 +89,12 @@ def arg_to_place(arg, places):
 
 
 # Enter the base-64 encoded, encrypted Slack command token (CiphertextBlob)
-ENCRYPTED_EXPECTED_TOKEN = "CiCMaLgbIgY1tALBXOBOLadCqNPKt+QxKJGf5FAWfr+cIhKfAQEBAgB4jGi4GyIGNbQCwVzgTi2nQqjTyrfkMSiRn+RQFn6/nCIAAAB2MHQGCSqGSIb3DQEHBqBnMGUCAQAwYAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAy+8y6StK4ViPcWHV4CARCAMzX7xGBzE0Xpq5eywF3FnnOyQNTkErQ3vx2aWXHY/5I9u1oBgz4UJVkGH6BAOjQaxw0Yeg=="
+ENCRYPTED_EXPECTED_TOKEN = os.environ["slack_token"]
 
 kms = boto3.client('kms')
 expected_token = kms.decrypt(
     CiphertextBlob=b64decode(ENCRYPTED_EXPECTED_TOKEN))['Plaintext']
-
+#expected_token = boto3.client('kms').decrypt(CiphertextBlob=b64decode(ENCRYPTED_EXPECTED_TOKEN))['Plaintext']
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
